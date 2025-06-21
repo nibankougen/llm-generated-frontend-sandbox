@@ -7,6 +7,7 @@ import PostList from "./components/PostList"
 
 function App() {
   const [user, setUser] = useState<User | null>(null)
+  const [refreshKey, setRefreshKey] = useState(0)
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -19,8 +20,15 @@ function App() {
     <div className="min-h-screen bg-gray-100 p-4">
       <h1 className="text-2xl font-bold text-center mb-4">認証付き投稿アプリ</h1>
       <Auth user={user} />
-      {user && <PostForm user={user} />}
-      <PostList user={user} />
+      {user && (
+        <>
+          <PostForm
+            user={user}
+            onPostCreated={() => setRefreshKey((prev) => prev + 1)}
+          />
+          <PostList user={user} key={refreshKey} />
+        </>
+      )}
     </div>
   )
 }

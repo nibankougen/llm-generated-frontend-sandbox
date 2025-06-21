@@ -9,7 +9,13 @@ import type { User } from "firebase/auth"
 
 const db = getFirestore(app)
 
-export default function PostForm({ user }: { user: User }) {
+export default function PostForm({
+    user,
+    onPostCreated,
+}: {
+    user: User
+    onPostCreated: () => void
+}) {
     const [title, setTitle] = useState("")
     const [content, setContent] = useState("")
 
@@ -25,6 +31,8 @@ export default function PostForm({ user }: { user: User }) {
         setTitle("")
         setContent("")
         alert("投稿しました")
+
+        onPostCreated() // ← 投稿完了後に通知！
     }
 
     return (
