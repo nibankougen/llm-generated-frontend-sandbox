@@ -30,7 +30,6 @@ export default function PostForm({
         })
         setTitle("")
         setContent("")
-        alert("投稿しました")
 
         onPostCreated() // ← 投稿完了後に通知！
     }
