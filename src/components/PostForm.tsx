@@ -1,10 +1,15 @@
-// src/components/PostForm.tsx
-import { useState } from "react"
+import { useEffect, useState } from "react"
+import {
+    getFirestore,
+    collection,
+    addDoc,
+    doc,
+    getDoc,
+} from "firebase/firestore"
+import app from "../firebase"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
-import { getFirestore, collection, addDoc } from "firebase/firestore"
-import app from "../firebase"
 import type { User } from "firebase/auth"
 
 const db = getFirestore(app)
@@ -18,6 +23,16 @@ export default function PostForm({
 }) {
     const [title, setTitle] = useState("")
     const [content, setContent] = useState("")
+    const [userName, setUserName] = useState("")
+
+    // ユーザー名の取得
+    useEffect(() => {
+        const fetchName = async () => {
+            const userDoc = await getDoc(doc(db, "users", user.uid))
+            setUserName(userDoc.exists() ? userDoc.data().name : "")
+        }
+        fetchName()
+    }, [user.uid])
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -26,12 +41,11 @@ export default function PostForm({
             content,
             createdAt: new Date(),
             userId: user.uid,
-            userName: user.displayName,
+            userName: userName || "匿名",
         })
         setTitle("")
         setContent("")
-
-        onPostCreated() // ← 投稿完了後に通知！
+        onPostCreated()
     }
 
     return (
