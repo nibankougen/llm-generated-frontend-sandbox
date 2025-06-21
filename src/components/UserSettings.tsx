@@ -1,3 +1,4 @@
+// src/components/UserSettings.tsx
 import { useEffect, useState } from "react"
 import {
     getFirestore,
@@ -9,44 +10,70 @@ import app from "../firebase"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import type { User } from "firebase/auth"
+import { useNavigate } from "react-router-dom"
 
 const db = getFirestore(app)
 
 export default function UserSettings({ user }: { user: User }) {
     const [name, setName] = useState("")
     const [loading, setLoading] = useState(true)
+    const [error, setError] = useState("")
+    const navigate = useNavigate()
 
-    // 初回読み込みで Firestore からユーザー名を取得
     useEffect(() => {
         const fetchName = async () => {
-            const docRef = doc(db, "users", user.uid)
-            const docSnap = await getDoc(docRef)
-            if (docSnap.exists()) {
-                setName(docSnap.data().name || "")
+            try {
+                const docRef = doc(db, "users", user.uid)
+                const docSnap = await getDoc(docRef)
+                if (docSnap.exists()) {
+                    setName(docSnap.data().name || "")
+                }
+            } catch (error) {
+                console.error("ユーザー情報の取得に失敗しました:", error)
+            } finally {
+                setLoading(false)
             }
-            setLoading(false)
         }
+
         fetchName()
     }, [user.uid])
 
     const handleSave = async () => {
-        await setDoc(doc(db, "users", user.uid), {
-            name,
-        })
-        alert("保存しました")
+        if (name.trim() === "") {
+            setError("名前を入力してください")
+            return
+        }
+
+        try {
+            await setDoc(doc(db, "users", user.uid), {
+                name: name.trim(),
+            })
+            setError("")
+            navigate("/")
+        } catch (err) {
+            console.error("保存に失敗:", err)
+            setError("保存に失敗しました")
+        }
     }
 
     if (loading) return <p>読み込み中...</p>
 
     return (
-        <div className="max-w-md mx-auto mt-6 space-y-2">
-            <h2 className="font-bold text-lg">表示名の設定</h2>
+        <div className="space-y-4">
+            <h2 className="text-xl font-semibold text-blue-800">表示名の設定</h2>
             <Input
+                className="border-blue-400 focus:ring-blue-500"
                 placeholder="あなたの名前"
                 value={name}
-                onChange={(e) => setName(e.target.value)}
+                onChange={(e) => {
+                    setName(e.target.value)
+                    setError("")
+                }}
             />
-            <Button onClick={handleSave}>保存</Button>
+            {error && <p className="text-red-500 text-sm">{error}</p>}
+            <Button className="bg-blue-600 hover:bg-blue-700" onClick={handleSave} disabled={name.trim() === ""}>
+                保存
+            </Button>
         </div>
     )
 }

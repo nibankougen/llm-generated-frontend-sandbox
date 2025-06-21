@@ -45,46 +45,49 @@ function App() {
 
   return (
     <Router>
-      <div className="min-h-screen bg-gray-100 p-4">
-        <h1 className="text-2xl font-bold text-center mb-4">認証付き投稿アプリ</h1>
-        <Auth user={user} userName={userName} />
+      <div className="min-h-screen bg-gradient-to-b from-blue-50 to-blue-100 p-4">
+        <div className="max-w-3xl mx-auto">
+          <h1 className="text-3xl font-bold text-blue-800 text-center mb-6">
+            認証付き投稿アプリ
+          </h1>
+          <Auth user={user} userName={userName} />
+          <nav className="flex justify-center mb-4 gap-4 text-blue-700">
+            <Link to="/" className="hover:underline">投稿一覧</Link>
+            {user && <Link to="/settings" className="hover:underline">ユーザー設定</Link>}
+          </nav>
+          <div className="bg-white shadow-md rounded-xl p-6">
 
-        <div className="text-center mb-4">
-          <Link to="/" className="mr-4 underline text-blue-600">
-            投稿一覧
-          </Link>
-          {user && <Link to="/settings" className="underline text-blue-600">ユーザー設定</Link>}
-        </div>
-
-        <Routes>
-          <Route
-            path="/"
-            element={
-              user && userDocReady ? (
-                userName === "" ? (
-                  <Navigate to="/settings" replace />
-                ) : (
-                  <>
-                    <PostForm user={user} onPostCreated={() => setRefreshKey((k) => k + 1)} />
+            <Routes>
+              <Route
+                path="/"
+                element={
+                  user && userDocReady ? (
+                    userName === "" ? (
+                      <Navigate to="/settings" replace />
+                    ) : (
+                      <>
+                        <PostForm user={user} onPostCreated={() => setRefreshKey((k) => k + 1)} />
+                        <PostList user={user} key={refreshKey} />
+                      </>
+                    )
+                  ) : (
                     <PostList user={user} key={refreshKey} />
-                  </>
-                )
-              ) : (
-                <PostList user={user} key={refreshKey} />
-              )
-            }
-          />
-          <Route
-            path="/settings"
-            element={
-              user && userDocReady ? (
-                <UserSettingsPage user={user} />
-              ) : (
-                <Navigate to="/" replace />
-              )
-            }
-          />
-        </Routes>
+                  )
+                }
+              />
+              <Route
+                path="/settings"
+                element={
+                  user && userDocReady ? (
+                    <UserSettingsPage user={user} />
+                  ) : (
+                    <Navigate to="/" replace />
+                  )
+                }
+              />
+            </Routes>
+          </div>
+        </div>
       </div>
     </Router>
   )
