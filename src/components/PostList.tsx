@@ -100,14 +100,22 @@ export default function PostList({ user }: { user: User | null }) {
                 userId: user.uid,
                 createdAt: serverTimestamp(),
             })
-            // いいねユーザーステータスも保存
+            // いいねユーザーステータスも重複がなければ保存
             const post = posts.find((p) => p.id === postId)
             if (post) {
-                await addDoc(collection(db, "likeUserStatus"), {
-                    fromUserId: user.uid,
-                    toUserId: post.userId,
-                    createdAt: serverTimestamp(),
-                })
+                const statusQ = query(
+                    collection(db, "likeUserStatus"),
+                    where("fromUserId", "==", user.uid),
+                    where("toUserId", "==", post.userId)
+                )
+                const statusSnap = await getDocs(statusQ)
+                if (statusSnap.empty) {
+                    await addDoc(collection(db, "likeUserStatus"), {
+                        fromUserId: user.uid,
+                        toUserId: post.userId,
+                        createdAt: serverTimestamp(),
+                    })
+                }
             }
         }
         await fetchLikes()
